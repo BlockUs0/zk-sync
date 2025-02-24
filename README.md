@@ -1,51 +1,39 @@
-# ZKsync Hardhat project template
+# Blockus ZKSync Smart Contracts
 
-This project was scaffolded with [zksync-cli](https://github.com/matter-labs/zksync-cli).
+Smart contracts for Blockus platform deployed on ZKSync network.
 
 ## Project Layout
 
-- `/contracts`: Contains solidity smart contracts.
-- `/deploy`: Scripts for contract deployment and interaction.
-- `/test`: Test files.
-- `hardhat.config.ts`: Configuration settings.
+- `/contracts`: Solidity smart contracts
+  - `ERC1155Token.sol`: Main token implementation
+  - `ERC1155TokenBeacon.sol`: Beacon for upgradeable pattern
+  - `ERC1155TokenBeaconFactory.sol`: Factory for creating new token instances
+- `/scripts`: Deployment and interaction scripts
+  - `blockus.ts`: Main deployment script
+  - `constructors-params.ts`: Configuration for contract deployment
+- `/test`: Contract test files
 
-## How to Use
+## Available Scripts
 
-- `npm run compile`: Compiles contracts.
-- `npm run deploy`: Deploys using script `/deploy/deploy.ts`.
-- `npm run interact`: Interacts with the deployed contract using `/deploy/interact.ts`.
-- `npm run test`: Tests the contracts.
+- `npm run compile`: Compiles the smart contracts
+- `npm run deploy`: Deploys the contracts using `scripts/blockus.ts`
+- `npm run clean`: Cleans the build artifacts
+- `npm run test`: Runs tests on hardhat network
 
-Note: Both `npm run deploy` and `npm run interact` are set in the `package.json`. You can also run your files directly, for example: `npx hardhat deploy-zksync --script deploy.ts`
+## Dependencies
 
-### Environment Settings
+- `@openzeppelin/contracts-upgradeable`: ^4.9.3
+- `@matterlabs/hardhat-zksync`: ^1.3.0
+- `zksync-ethers`: ^6.15.3
+- `hardhat`: ^2.22.17
 
-To keep private keys safe, this project pulls in environment variables from `.env` files. Primarily, it fetches the wallet's private key.
+## Deployment
 
-Rename `.env.example` to `.env` and fill in your private key:
+The deployment script (`scripts/blockus.ts`) will deploy:
+1. ERC1155Token implementation
+2. ERC1155TokenBeacon
+3. ERC1155TokenBeaconFactory
 
-```
-WALLET_PRIVATE_KEY=your_private_key_here...
-```
-
-### Network Support
-
-`hardhat.config.ts` comes with a list of networks to deploy and test contracts. Add more by adjusting the `networks` section in the `hardhat.config.ts`. To make a network the default, set the `defaultNetwork` to its name. You can also override the default using the `--network` option, like: `hardhat test --network dockerizedNode`.
-
-### Local Tests
-
-Running `npm run test` by default runs the [ZKsync In-memory Node](https://docs.zksync.io/build/test-and-debug/in-memory-node) provided by the [@matterlabs/hardhat-zksync-node](https://docs.zksync.io/build/tooling/hardhat/hardhat-zksync-node) tool.
-
-Important: ZKsync In-memory Node currently supports only the L2 node. If contracts also need L1, use another testing environment like Dockerized Node. Refer to [test documentation](https://docs.zksync.io/build/test-and-debug) for details.
-
-## Useful Links
-
-- [Docs](https://docs.zksync.io/build)
-- [Official Site](https://zksync.io/)
-- [GitHub](https://github.com/matter-labs)
-- [Twitter](https://twitter.com/zksync)
-- [Discord](https://join.zksync.dev/)
-
-## License
-
-This project is under the [MIT](./LICENSE) license.
+To deploy:
+```bash
+npm run deploy
