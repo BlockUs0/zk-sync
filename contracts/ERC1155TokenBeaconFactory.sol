@@ -1,36 +1,66 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
-
-import "@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol";
-import './ERC1155TokenBeacon.sol';
 import './ERC1155Token.sol';
 
-contract ERC1155TokenBeaconFactory {
-
+contract ERC1155TokenFactory {
     string public version = "1.0.0";
-
-    ERC1155TokenBeacon immutable public beacon;
-
-    event ERC1155Created(address indexed owner, address indexed erc1155Contract, uint8 indexed currentDefaultChoice);
-
-    constructor(address erc1155Beacon) {
-        beacon = ERC1155TokenBeacon(erc1155Beacon);
+    
+    address public signerAuthority;
+    address public trustedForwarder;
+    address public owner;
+    
+    address[] private _deployedContracts;
+    
+    event ERC1155Created(address indexed owner, address indexed erc1155Contract);
+    
+    constructor(address _signerAuthority, address _trustedForwarder) {
+        signerAuthority = _signerAuthority;
+        trustedForwarder = _trustedForwarder;
+        owner = msg.sender;
     }
-
-    function createERC1155(string memory contractName, string memory uri, string[] memory tokensName,uint256[] memory tokensMaxSupply, bool[] memory isSoulbound, uint8 defaultChoice) public  {
-        BeaconProxy proxy = new BeaconProxy(address(beacon), 
-            abi.encodeWithSelector(ERC1155Token(address(0)).initialize.selector, contractName, uri, tokensName, tokensMaxSupply, isSoulbound,defaultChoice)
+    
+    function createERC1155(
+        string memory contractName, 
+        string memory uri, 
+        string[] memory tokensName,
+        uint256[] memory tokensMaxSupply, 
+        bool[] memory isSoulbound
+    ) public {
+        ERC1155Token newToken = new ERC1155Token(
+            msg.sender,
+            signerAuthority,
+            trustedForwarder,
+            contractName,
+            uri,
+            tokensName,
+            tokensMaxSupply,
+            isSoulbound
         );
-        address owner = ERC1155Token(address(proxy)).owner();
-        uint8 currentDefaultChoice = ERC1155Token(address(proxy)).currentDefaultChoice();
-        emit ERC1155Created(owner,address(proxy),currentDefaultChoice);
+        
+        _deployedContracts.push(address(newToken));
+        
+        emit ERC1155Created(msg.sender, address(newToken));
     }
-
-    function getImplementation() public view returns (address) {
-        return beacon.implementation();
+    
+    function getAllDeployedContracts() public view returns (address[] memory) {
+        return _deployedContracts;
     }
-
-    function getBeacon() public view returns (address) {
-        return address(beacon);
+    
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Caller is not the owner");
+        _;
+    }
+    
+    function setSignerAuthority(address _signerAuthority) public onlyOwner {
+        signerAuthority = _signerAuthority;
+    }
+    
+    function setTrustedForwarder(address _trustedForwarder) public onlyOwner {
+        trustedForwarder = _trustedForwarder;
+    }
+    
+    function transferOwnership(address newOwner) public onlyOwner {
+        require(newOwner != address(0), "New owner is the zero address");
+        owner = newOwner;
     }
 }

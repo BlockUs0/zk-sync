@@ -30,6 +30,8 @@
     "zksync-ethers": "^6.15.3"
   },
   "dependencies": {
-    "@openzeppelin/contracts-upgradeable": "^4.9.3"
+    "@matterlabs/hardhat-zksync-upgradable": "^1.8.2",
+    "@openzeppelin/contracts-upgradeable": "^4.9.3",
+    "i": "^0.3.7"
   }
 }
