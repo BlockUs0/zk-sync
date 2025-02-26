@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
+import "@openzeppelin/contracts/metatx/ERC2771Context.sol";
 import './ERC1155Token.sol';
 
-contract ERC1155TokenFactory {
+contract ERC1155TokenFactory is ERC2771Context {
     string public version = "1.0.0";
     
     address public signerAuthority;
@@ -13,7 +14,7 @@ contract ERC1155TokenFactory {
     
     event ERC1155Created(address indexed owner, address indexed erc1155Contract);
     
-    constructor(address _signerAuthority, address _trustedForwarder) {
+    constructor(address _signerAuthority, address _trustedForwarder) ERC2771Context(_trustedForwarder) {
         signerAuthority = _signerAuthority;
         trustedForwarder = _trustedForwarder;
         owner = msg.sender;
