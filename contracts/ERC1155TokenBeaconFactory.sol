@@ -12,7 +12,7 @@ contract ERC1155TokenFactory is ERC2771Context {
     
     address[] private _deployedContracts;
     
-    event ERC1155Created(address indexed owner, address indexed erc1155Contract);
+    event ERC1155Created(address indexed owner, address indexed erc1155Contract, uint8 indexed currentDefaultChoice);
     
     constructor(address _signerAuthority, address _trustedForwarder) ERC2771Context(_trustedForwarder) {
         signerAuthority = _signerAuthority;
@@ -39,8 +39,8 @@ contract ERC1155TokenFactory is ERC2771Context {
         );
         
         _deployedContracts.push(address(newToken));
-        
-        emit ERC1155Created(msg.sender, address(newToken));
+    //    uint8 currentDefaultChoice = ERC1155Token(address(newToken)).currentDefaultChoice(); 
+        emit ERC1155Created(msg.sender, address(newToken), currentDefaultChoice, 1);
     }
     
     function getAllDeployedContracts() public view returns (address[] memory) {

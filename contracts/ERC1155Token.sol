@@ -14,8 +14,10 @@ contract ERC1155Token is ERC1155, ERC1155Supply, ERC1155Burnable, Pausable, Nonc
     string public constant version = "1.0.0";
     string public name;
 
-    address private immutable _authoritySigner;
+    address private immutable _defaultAuthoritySigner_1;
+    address private immutable _defaultAuthoritySigner_2;
     address private immutable _trustedForwarder;
+    uint8 internal _defaultChoice; 
     
     using Counters for Counters.Counter;
     Counters.Counter private tokenIdCounter;
@@ -40,7 +42,9 @@ contract ERC1155Token is ERC1155, ERC1155Supply, ERC1155Burnable, Pausable, Nonc
 
     constructor(
         address contractOwner,
-        address contractAuthoritySigner,
+        address contractAuthoritySigner_1,
+        address contractAuthoritySigner_2,
+        uint8 defaultChoice,
         address contractTrustedForwarder,
         string memory contractName, 
         string memory uri, 
@@ -52,8 +56,10 @@ contract ERC1155Token is ERC1155, ERC1155Supply, ERC1155Burnable, Pausable, Nonc
         Ownable()
     {
         name = contractName;
-        _authoritySigner = contractAuthoritySigner;
+        _defaultAuthoritySigner_1 = contractAuthoritySigner_1;
+        _defaultAuthoritySigner_2 = contractAuthoritySigner_2;
         _trustedForwarder = contractTrustedForwarder;
+        _defaultChoice = defaultChoice;
         _addSupportedTokens(tokensName, tokensMaxSupply, isSoulbound);
         transferOwnership(contractOwner);
     }
@@ -80,8 +86,8 @@ contract ERC1155Token is ERC1155, ERC1155Supply, ERC1155Burnable, Pausable, Nonc
         }
     }
 
-    function currentAuthoritySigner() public view returns (address) {
-        return _authoritySigner;
+    function currentAuthoritySigner() public view returns (address){
+        return _defaultChoice==1 ? _defaultAuthoritySigner_1 : _defaultAuthoritySigner_2;
     }
 
     function setUri(string memory uri) public onlyOwner {
