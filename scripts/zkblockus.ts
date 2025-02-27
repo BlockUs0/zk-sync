@@ -43,7 +43,7 @@ async function deployContracts() {
   // Deploy with updated constructor arguments and factory dependencies
   const deploymentTx = await wallet.sendTransaction({
     to: ethers.ZeroAddress,  // null address indicates contract creation
-    data: factory.interface.encodeDeploy([signerAuthority1, signerAuthority2, defaultChoice, trustedForwarder]),
+    data: factory.interface.encodeDeploy([signerAuthority1, signerAuthority2, trustedForwarder]),
     customData: {
       factoryDeps: [erc1155Artifact.bytecode]
     }

@@ -17,7 +17,6 @@ async function deployContracts() {
   const factory = await ERC1155TokenFactory.deploy(
     signerAuthority1,
     signerAuthority2,
-    defaultChoice,
     trustedForwarder
   );
   
@@ -29,7 +28,7 @@ async function deployContracts() {
   console.log("\nDeployment completed. Verify contracts with:");
   console.log(
     `npx hardhat verify --network ${network.name} ${factoryAddress} ` +
-    `${signerAuthority1} ${signerAuthority2} ${defaultChoice} ${trustedForwarder}`
+    `${signerAuthority1} ${signerAuthority2} ${trustedForwarder}`
   );
   
   return {
