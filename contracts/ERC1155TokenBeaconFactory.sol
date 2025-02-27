@@ -6,16 +6,26 @@ import './ERC1155Token.sol';
 contract ERC1155TokenFactory is ERC2771Context {
     string public version = "1.0.0";
     
-    address public signerAuthority;
+    uint8 public defaultChoice;
+    address public signerAuthority1;
+    address public signerAuthority2;
     address public trustedForwarder;
     address public owner;
+
     
     address[] private _deployedContracts;
     
     event ERC1155Created(address indexed owner, address indexed erc1155Contract, uint8 indexed currentDefaultChoice);
     
-    constructor(address _signerAuthority, address _trustedForwarder) ERC2771Context(_trustedForwarder) {
-        signerAuthority = _signerAuthority;
+    constructor(
+        address _signerAuthority1,
+        address _signerAuthority2, 
+        uint8 _defaultChoice,
+        address _trustedForwarder
+    ) ERC2771Context(_trustedForwarder) {
+        signerAuthority1 = _signerAuthority1;
+        signerAuthority2 = _signerAuthority2;
+        defaultChoice = _defaultChoice;
         trustedForwarder = _trustedForwarder;
         owner = msg.sender;
     }
@@ -29,7 +39,9 @@ contract ERC1155TokenFactory is ERC2771Context {
     ) public {
         ERC1155Token newToken = new ERC1155Token(
             msg.sender,
-            signerAuthority,
+            signerAuthority1, 
+            signerAuthority2,
+            defaultChoice,
             trustedForwarder,
             contractName,
             uri,
@@ -37,10 +49,9 @@ contract ERC1155TokenFactory is ERC2771Context {
             tokensMaxSupply,
             isSoulbound
         );
-        
+
         _deployedContracts.push(address(newToken));
-    //    uint8 currentDefaultChoice = ERC1155Token(address(newToken)).currentDefaultChoice(); 
-        emit ERC1155Created(msg.sender, address(newToken), currentDefaultChoice, 1);
+        emit ERC1155Created(msg.sender, address(newToken), defaultChoice);
     }
     
     function getAllDeployedContracts() public view returns (address[] memory) {
@@ -50,10 +61,6 @@ contract ERC1155TokenFactory is ERC2771Context {
     modifier onlyOwner() {
         require(msg.sender == owner, "Caller is not the owner");
         _;
-    }
-    
-    function setSignerAuthority(address _signerAuthority) public onlyOwner {
-        signerAuthority = _signerAuthority;
     }
     
     function setTrustedForwarder(address _trustedForwarder) public onlyOwner {
