@@ -86,6 +86,10 @@ contract ERC1155Token is ERC1155, ERC1155Supply, ERC1155Burnable, Pausable, Nonc
         }
     }
 
+    function currentDefaultChoice() public view returns (uint8){
+        return _defaultChoice;
+    }
+
     function currentAuthoritySigner() public view returns (address){
         return _defaultChoice==1 ? _defaultAuthoritySigner_1 : _defaultAuthoritySigner_2;
     }

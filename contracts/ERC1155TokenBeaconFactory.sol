@@ -6,11 +6,11 @@ import './ERC1155Token.sol';
 contract ERC1155TokenFactory is ERC2771Context {
     string public version = "1.0.0";
     
-    uint8 public defaultChoice;
     address public signerAuthority1;
     address public signerAuthority2;
     address public trustedForwarder;
     address public owner;
+
     
     address[] private _deployedContracts;
     
@@ -19,12 +19,10 @@ contract ERC1155TokenFactory is ERC2771Context {
     constructor(
         address _signerAuthority1,
         address _signerAuthority2, 
-        uint8 _defaultChoice,
         address _trustedForwarder
     ) ERC2771Context(_trustedForwarder) {
         signerAuthority1 = _signerAuthority1;
         signerAuthority2 = _signerAuthority2;
-        defaultChoice = _defaultChoice;
         trustedForwarder = _trustedForwarder;
         owner = msg.sender;
     }
@@ -34,7 +32,8 @@ contract ERC1155TokenFactory is ERC2771Context {
         string memory uri, 
         string[] memory tokensName,
         uint256[] memory tokensMaxSupply, 
-        bool[] memory isSoulbound
+        bool[] memory isSoulbound,
+        uint8 defaultChoice
     ) public {
         ERC1155Token newToken = new ERC1155Token(
             msg.sender,
@@ -50,7 +49,7 @@ contract ERC1155TokenFactory is ERC2771Context {
         );
 
         _deployedContracts.push(address(newToken));
-        emit ERC1155Created(msg.sender, address(newToken), defaultChoice);
+        emit ERC1155Created(msg.sender, address(newToken), defaultChoice );
     }
     
     function getAllDeployedContracts() public view returns (address[] memory) {

@@ -97,7 +97,6 @@ describe("ERC1155Token Basic Tests", function () {
       const factory = await ERC1155TokenFactory.deploy(
         await signer1Wallet.getAddress(),   // signerAuthority1
         await signer2Wallet.getAddress(),   // signerAuthority2
-        defaultChoice,                      // defaultChoice
         "0x0000000000000000000000000000000000000000" // trusted forwarder
       );
       await factory.waitForDeployment();
@@ -114,13 +113,15 @@ describe("ERC1155Token Basic Tests", function () {
       const newTokensName = ["FACTORY_ITEM"];
       const newTokensMaxSupply = [20n];
       const newIsSoulBound = [false];
+      const defaultChoice = 1;
       
       await factory.connect(ownerWallet).createERC1155(
         newTokenName,
         newTokenUri,
         newTokensName,
         newTokensMaxSupply,
-        newIsSoulBound
+        newIsSoulBound,
+        defaultChoice
       );
       
       const deployedContracts = await factory.getAllDeployedContracts();
