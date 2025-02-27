@@ -7,55 +7,60 @@ describe("ERC1155Token Basic Tests", function () {
   const uri = "https://example.com/token/{id}.json";
   const tokensName = ["GENESIS_CITY"];
   const tokensMaxSupply = [10n];
-  const isSoulBound = [true]; // Changed from 0 to true for boolean array
+  const isSoulBound = [true];
+  const defaultChoice = 1;
   
   let ownerWallet: Wallet;
-  let signerWallet: Wallet;
+  let signer1Wallet: Wallet;
+  let signer2Wallet: Wallet;
   let userWallet: Wallet;
   
   let erc1155Token: any;
   
   before(async function() {
-    const [deployer, signer, user] = await ethers.getSigners();
+    const [deployer, signer1, signer2, user] = await ethers.getSigners();
     
     ownerWallet = deployer as any;
-    signerWallet = signer as any;
+    signer1Wallet = signer1 as any;
+    signer2Wallet = signer2 as any;
     userWallet = user as any;
     
     console.log("Owner address:", await ownerWallet.getAddress());
-    console.log("Signer address:", await signerWallet.getAddress());
+    console.log("Signer1 address:", await signer1Wallet.getAddress());
+    console.log("Signer2 address:", await signer2Wallet.getAddress());
     console.log("User address:", await userWallet.getAddress());
   });
   
   describe("Basic Deployment", function () {
     it("Should deploy ERC1155Token and verify basic properties", async function () {
-      // Deploy ERC1155Token contract
       const ERC1155Token = await ethers.getContractFactory("ERC1155Token");
       
-      // Constructor args for simplified contract
       const constructorArgs = [
-        await ownerWallet.getAddress(),  // owner
-        await signerWallet.getAddress(), // signer authority
+        await ownerWallet.getAddress(),       // contractOwner
+        await signer1Wallet.getAddress(),     // contractAuthoritySigner_1
+        await signer2Wallet.getAddress(),     // contractAuthoritySigner_2
+        defaultChoice,                        // defaultChoice
         "0x0000000000000000000000000000000000000000", // trusted forwarder
-        name,  // contract name
-        uri,   // token URI
-        tokensName,  // Array of token names
-        tokensMaxSupply,  // Array of max supplies
-        isSoulBound  // Array of soulbound flags
+        name,                                 // contract name
+        uri,                                  // token URI
+        tokensName,                           // Array of token names
+        tokensMaxSupply,                      // Array of max supplies
+        isSoulBound                           // Array of soulbound flags
       ];
       
       erc1155Token = await ERC1155Token.deploy(...constructorArgs);
       await erc1155Token.waitForDeployment();
       
-      // No initialize function in the simplified contract
-      
       // Verify basic properties
       expect(await erc1155Token.name()).to.equal(name);
       expect(await erc1155Token.uri(1)).to.equal(uri);
       expect(await erc1155Token.owner()).to.equal(await ownerWallet.getAddress());
-      expect(await erc1155Token.currentAuthoritySigner()).to.equal(
-        await signerWallet.getAddress()
-      );
+      
+      // Verify the current authority signer is based on defaultChoice
+      const expectedSigner = defaultChoice === 1 ? 
+        await signer1Wallet.getAddress() : 
+        await signer2Wallet.getAddress();
+      expect(await erc1155Token.currentAuthoritySigner()).to.equal(expectedSigner);
       
       // Verify token was added during deployment
       const tokenDetails = await erc1155Token.getTokenDetails();
@@ -90,13 +95,19 @@ describe("ERC1155Token Basic Tests", function () {
     it("Should deploy factory and create a token through it", async function() {
       const ERC1155TokenFactory = await ethers.getContractFactory("ERC1155TokenFactory");
       const factory = await ERC1155TokenFactory.deploy(
-        await signerWallet.getAddress(),
+        await signer1Wallet.getAddress(),   // signerAuthority1
+        await signer2Wallet.getAddress(),   // signerAuthority2
+        defaultChoice,                      // defaultChoice
         "0x0000000000000000000000000000000000000000" // trusted forwarder
       );
       await factory.waitForDeployment();
       
       expect(await factory.owner()).to.equal(await ownerWallet.getAddress());
-      expect(await factory.signerAuthority()).to.equal(await signerWallet.getAddress());
+      
+      // Check proper signers are set
+      expect(await factory.signerAuthority1()).to.equal(await signer1Wallet.getAddress());
+      expect(await factory.signerAuthority2()).to.equal(await signer2Wallet.getAddress());
+      expect(await factory.defaultChoice()).to.equal(BigInt(defaultChoice));
       
       const newTokenName = "Factory Token";
       const newTokenUri = "https://example.com/factory-token/{id}.json";
@@ -121,7 +132,12 @@ describe("ERC1155Token Basic Tests", function () {
       expect(await factoryCreatedToken.name()).to.equal(newTokenName);
       expect(await factoryCreatedToken.uri(1)).to.equal(newTokenUri);
       expect(await factoryCreatedToken.owner()).to.equal(await ownerWallet.getAddress());
-      expect(await factoryCreatedToken.currentAuthoritySigner()).to.equal(await signerWallet.getAddress());
+      
+      // Verify the current authority signer is based on defaultChoice
+      const expectedSigner = defaultChoice === 1 ? 
+        await signer1Wallet.getAddress() : 
+        await signer2Wallet.getAddress();
+      expect(await factoryCreatedToken.currentAuthoritySigner()).to.equal(expectedSigner);
       
       const tokenDetails = await factoryCreatedToken.getTokenDetails();
       expect(tokenDetails.length).to.equal(1);

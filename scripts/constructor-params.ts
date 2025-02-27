@@ -49,6 +49,8 @@ const getERC1155TokenBeaconFactoryConstructorParameters = (beaconAddress: string
 ];
 
 module.exports = {
+    prodConfig,
+    stageConfig,
     create2deployerConstructorParameters,
     erc1155TokenImplConstructorParametersDic,
     erc1155TokenImplConstructorParameters,

@@ -11,7 +11,6 @@ contract ERC1155TokenFactory is ERC2771Context {
     address public signerAuthority2;
     address public trustedForwarder;
     address public owner;
-
     
     address[] private _deployedContracts;
     

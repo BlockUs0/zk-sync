@@ -1,5 +1,5 @@
 import { ethers, network } from "hardhat";
-import { erc1155TokenImplConstructorParameters } from "./constructor-params";
+import { prodConfig, stageConfig } from "./constructor-params";
 
 async function deployContracts() {
   console.log(`Deploying contracts to ${network.name}`);
@@ -8,22 +8,29 @@ async function deployContracts() {
   const [deployer] = await ethers.getSigners();
   console.log(`Deploying contracts with the account: ${deployer.address}`);
   
-  const signerAuthority = erc1155TokenImplConstructorParameters[1];
-  const trustedForwarder = erc1155TokenImplConstructorParameters[2];
+  const signerAuthority1 = prodConfig.defaultAuthoritySigner;
+  const signerAuthority2 = stageConfig.defaultAuthoritySigner;
+  const trustedForwarder = prodConfig.defaultTrustedForwarder;
+  const defaultChoice = 1;
   
-  // Deploy ERC1155TokenFactory first
   const ERC1155TokenFactory = await ethers.getContractFactory("ERC1155TokenFactory");
   const factory = await ERC1155TokenFactory.deploy(
-    signerAuthority,
+    signerAuthority1,
+    signerAuthority2,
+    defaultChoice,
     trustedForwarder
   );
+  
   await factory.waitForDeployment();
   const factoryAddress = await factory.getAddress();
   console.log("ERC1155TokenFactory deployed to:", factoryAddress);
   
-  // Verify the deployment
+  // Update verification command with new parameters
   console.log("\nDeployment completed. Verify contracts with:");
-  console.log(`npx hardhat verify --network ${network.name} ${factoryAddress} ${signerAuthority} ${trustedForwarder}`);
+  console.log(
+    `npx hardhat verify --network ${network.name} ${factoryAddress} ` +
+    `${signerAuthority1} ${signerAuthority2} ${defaultChoice} ${trustedForwarder}`
+  );
   
   return {
     factory: factoryAddress,
